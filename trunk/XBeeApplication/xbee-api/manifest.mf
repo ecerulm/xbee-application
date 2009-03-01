@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+OpenIDE-Module: com.rapplogic.xbee
+OpenIDE-Module-Localizing-Bundle: com/rapplogic/xbee/Bundle.properties
+OpenIDE-Module-Specification-Version: 0.5.1
+

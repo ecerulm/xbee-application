@@ -249,13 +249,20 @@ final class XBeeTopComponent extends TopComponent {
 
     private void reconfigXbee() {
         try {
-            String portToOpen = serialPortJComboBox.getSelectedItem().toString();
-            int baudRate = Integer.parseInt(speedJComboBox.getSelectedItem().toString());
+            Object selectedItem = serialPortJComboBox.getSelectedItem();
+            if (null == selectedItem || "Select a port".equals(selectedItem)) {
+                return;
+            }
+            String portToOpen = selectedItem.toString();
+            selectedItem = speedJComboBox.getSelectedItem();
+            if (null == selectedItem) {
+                return;
+            }
+            int baudRate = Integer.parseInt(selectedItem.toString());
             xbee.close();
             xbee = new XBee();
             //xbee.open(portToOpen, Integer.getInteger(speedJComboBox.getSelectedItem().toString()));
             xbee.open(portToOpen, baudRate);
-
         } catch (XBeeException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -281,12 +288,16 @@ final class XBeeTopComponent extends TopComponent {
             @Override
             protected void done() {
                 try {
-                    List items = get();
                     serialPortJComboBox.removeAllItems();
+
+                    List items = get();
+                    
                     for (Object item : items) {
                         serialPortJComboBox.insertItemAt(item, 0);
-                        serialPortJComboBox.setSelectedIndex(0);
                     }
+                    serialPortJComboBox.insertItemAt("Select a port",0);
+                    serialPortJComboBox.setSelectedIndex(0);
+
                 } catch (InterruptedException ex) {
                     Exceptions.printStackTrace(ex);
                 } catch (ExecutionException ex) {
@@ -485,11 +496,15 @@ final class XBeeTopComponent extends TopComponent {
             protected void done() {
                 try {
                     XBeeResponse o = get();
-                    int[] bytes = o.getPacketBytes();
-                    if (bytes.length!=6) {
-                        Exceptions.printStackTrace(new RuntimeException("packet bytes aren't what I expected"));
+                    if (null != o) {
+                        if(o instanceof AtCommandResponse) {
+                            AtCommandResponse r = (AtCommandResponse)o;
+                        int[] bytes = r.getValue();
+                        if (bytes.length != 6) {
+                            Exceptions.printStackTrace(new RuntimeException("packet bytes aren't what I expected"));
+                        }
                     }
-                    
+                    }
                 } catch (InterruptedException ex) {
                     Exceptions.printStackTrace(ex);
                 } catch (ExecutionException ex) {

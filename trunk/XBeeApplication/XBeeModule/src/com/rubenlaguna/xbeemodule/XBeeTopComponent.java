@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
 import org.jdesktop.swingworker.SwingWorker;
+import org.jletty.util.HexUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
@@ -500,9 +501,12 @@ final class XBeeTopComponent extends TopComponent {
                         if(o instanceof AtCommandResponse) {
                             AtCommandResponse r = (AtCommandResponse)o;
                         int[] bytes = r.getValue();
-                        if (bytes.length != 6) {
+                        if (bytes.length != 10) {
                             Exceptions.printStackTrace(new RuntimeException("packet bytes aren't what I expected"));
                         }
+                        // bytes 6-9 SL
+                        shJTextField.setText(HexUtils.toHexString(bytes));
+                        //bytes  2-5 SH
                     }
                     }
                 } catch (InterruptedException ex) {

@@ -1,0 +1,6 @@
+Manifest-Version: 1.0
+OpenIDE-Module: com.rubenlaguna.xbeemodule
+OpenIDE-Module-Layer: com/rubenlaguna/xbeemodule/layer.xml
+OpenIDE-Module-Localizing-Bundle: com/rubenlaguna/xbeemodule/Bundle.properties
+OpenIDE-Module-Specification-Version: 1.0
+

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
+<filesystem>
+    <folder name="Actions">
+        <folder name="Window">
+            <file name="com-rubenlaguna-xbeemodule-XBeeAction.instance">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="com.rubenlaguna.xbeemodule.Bundle"/>
+                <attr name="component" methodvalue="com.rubenlaguna.xbeemodule.XBeeTopComponent.findInstance"/>
+                <attr name="displayName" bundlevalue="com.rubenlaguna.xbeemodule.Bundle#CTL_XBeeAction"/>
+                <attr name="instanceCreate" methodvalue="org.openide.windows.TopComponent.openAction"/>
+            </file>
+        </folder>
+    </folder>
+    <folder name="Menu">
+        <folder name="Window">
+            <file name="XBeeAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/com-rubenlaguna-xbeemodule-XBeeAction.instance"/>
+            </file>
+        </folder>
+    </folder>
+    <folder name="Windows2">
+        <folder name="Components">
+            <file name="XBeeTopComponent.settings" url="XBeeTopComponentSettings.xml"/>
+        </folder>
+        <folder name="Modes">
+            <folder name="explorer">
+                <file name="XBeeTopComponent.wstcref" url="XBeeTopComponentWstcref.xml"/>
+            </folder>
+        </folder>
+    </folder>
+</filesystem>

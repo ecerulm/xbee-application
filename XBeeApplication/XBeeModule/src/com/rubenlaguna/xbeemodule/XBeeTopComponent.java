@@ -500,6 +500,7 @@ final class XBeeTopComponent extends TopComponent {
                     if (null != o) {
                         if (o instanceof AtCommandResponse) {
                             AtCommandResponse r = (AtCommandResponse) o;
+                            //r.getPacketBytes();
                             int[] bytes = r.getValue();
                             if (bytes.length != 10) {
                                 Exceptions.printStackTrace(new RuntimeException("packet bytes aren't what I expected"));

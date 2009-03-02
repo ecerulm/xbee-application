@@ -292,11 +292,11 @@ final class XBeeTopComponent extends TopComponent {
                     serialPortJComboBox.removeAllItems();
 
                     List items = get();
-                    
+
                     for (Object item : items) {
                         serialPortJComboBox.insertItemAt(item, 0);
                     }
-                    serialPortJComboBox.insertItemAt("Select a port",0);
+                    serialPortJComboBox.insertItemAt("Select a port", 0);
                     serialPortJComboBox.setSelectedIndex(0);
 
                 } catch (InterruptedException ex) {
@@ -498,16 +498,27 @@ final class XBeeTopComponent extends TopComponent {
                 try {
                     XBeeResponse o = get();
                     if (null != o) {
-                        if(o instanceof AtCommandResponse) {
-                            AtCommandResponse r = (AtCommandResponse)o;
-                        int[] bytes = r.getValue();
-                        if (bytes.length != 10) {
-                            Exceptions.printStackTrace(new RuntimeException("packet bytes aren't what I expected"));
+                        if (o instanceof AtCommandResponse) {
+                            AtCommandResponse r = (AtCommandResponse) o;
+                            int[] bytes = r.getValue();
+                            if (bytes.length != 10) {
+                                Exceptions.printStackTrace(new RuntimeException("packet bytes aren't what I expected"));
+                            }
+                            byte[] data = new byte[bytes.length];
+                            for (int i = 0; i < bytes.length; i++) {
+                                int j = bytes[i];
+                                data[i] = (byte) j;
+                            }
+                            byte[] shBytes = new byte[4];
+                            byte[] slBytes = new byte[4];
+                            System.arraycopy(data, 2, shBytes, 0, 4);
+                            System.arraycopy(data, 6, slBytes, 0, 4);
+
+                            // bytes 6-9 SL
+                            shJTextField.setText(HexUtils.toHexString(shBytes).toUpperCase());
+                            //bytes  2-5 SH
+                            slJTextField.setText(HexUtils.toHexString(slBytes).toUpperCase());
                         }
-                        // bytes 6-9 SL
-                        shJTextField.setText(HexUtils.toHexString(bytes));
-                        //bytes  2-5 SH
-                    }
                     }
                 } catch (InterruptedException ex) {
                     Exceptions.printStackTrace(ex);

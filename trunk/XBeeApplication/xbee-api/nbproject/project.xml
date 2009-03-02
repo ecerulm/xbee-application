@@ -9,19 +9,13 @@
             <public-packages>
                 <package>com.rapplogic.xbee</package>
                 <package>com.rapplogic.xbee.api</package>
-                <package>com.rapplogic.xbee.api.wpan</package>
                 <package>com.rapplogic.xbee.api.zigbee</package>
-                <package>com.rapplogic.xbee.examples</package>
-                <package>com.rapplogic.xbee.examples.wpan</package>
-                <package>com.rapplogic.xbee.examples.zigbee</package>
-                <package>com.rapplogic.xbee.transparent</package>
                 <package>com.rapplogic.xbee.util</package>
                 <package>gnu.io</package>
-
             </public-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/xbee-api.jar</runtime-relative-path>
-                <binary-origin>release/modules/ext/xbee-api-0.5.1.jar</binary-origin>                
+                <runtime-relative-path>ext/xbee-api-0.5.1.jar</runtime-relative-path>
+                <binary-origin>release/modules/ext/xbee-api-0.5.1.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/log4j.jar</runtime-relative-path>

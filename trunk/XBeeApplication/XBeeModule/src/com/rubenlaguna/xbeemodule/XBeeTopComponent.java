@@ -47,12 +47,13 @@ final class XBeeTopComponent extends TopComponent {
 //    static final String ICON_PATH = "SET/PATH/TO/ICON/HERE";
     private static final String PREFERRED_ID = "XBeeTopComponent";
     private SerialPort serialPort;
+    private static NodesTopComponent nodesInstance;
 
     private XBeeTopComponent() {
         initComponents();
         setName(NbBundle.getMessage(XBeeTopComponent.class, "CTL_XBeeTopComponent"));
         setToolTipText(NbBundle.getMessage(XBeeTopComponent.class, "HINT_XBeeTopComponent"));
-
+        rescanJButtonActionPerformed(null);
 //        setIcon(Utilities.loadImage(ICON_PATH, true));
 
     }
@@ -297,7 +298,7 @@ final class XBeeTopComponent extends TopComponent {
                         serialPortJComboBox.insertItemAt(item, 0);
                     }
                     serialPortJComboBox.insertItemAt("Select a port", 0);
-                    serialPortJComboBox.setSelectedIndex(0);
+                    serialPortJComboBox.setSelectedIndex(serialPortJComboBox.getItemCount()-1);
 
                 } catch (InterruptedException ex) {
                     Exceptions.printStackTrace(ex);
@@ -345,6 +346,7 @@ final class XBeeTopComponent extends TopComponent {
                         IntArrayInputStream in = new IntArrayInputStream(data);
                         shJTextField.setText(new XBeeAddress16(in.read(2)).toString());
                         slJTextField.setText(new XBeeAddress64(in.read(8)).toString());
+
 
                     }
 
@@ -500,7 +502,7 @@ final class XBeeTopComponent extends TopComponent {
                     if (null != o) {
                         if (o instanceof AtCommandResponse) {
                             AtCommandResponse r = (AtCommandResponse) o;
-                            //r.getPacketBytes();
+                            r.getPacketBytes();
                             int[] bytes = r.getValue();
                             if (bytes.length != 10) {
                                 Exceptions.printStackTrace(new RuntimeException("packet bytes aren't what I expected"));
@@ -519,6 +521,9 @@ final class XBeeTopComponent extends TopComponent {
                             shJTextField.setText(HexUtils.toHexString(shBytes).toUpperCase());
                             //bytes  2-5 SH
                             slJTextField.setText(HexUtils.toHexString(slBytes).toUpperCase());
+                            String address64bit = HexUtils.toHexString(shBytes).toUpperCase() + HexUtils.toHexString(slBytes).toUpperCase();
+                            nodesInstance.findInstance().addNode(targetNodeIdentifierJTextField.getText(), "N/A", address64bit);
+
                         }
                     }
                 } catch (InterruptedException ex) {

@@ -33,11 +33,11 @@
                           <Component id="slJLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="slJTextField" alignment="0" pref="414" max="32767" attributes="0"/>
-                          <Component id="shJTextField" alignment="0" pref="414" max="32767" attributes="0"/>
+                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                          <Component id="slJTextField" max="32767" attributes="1"/>
+                          <Component id="shJTextField" alignment="0" pref="118" max="32767" attributes="1"/>
                       </Group>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace pref="316" max="32767" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace min="-2" pref="115" max="-2" attributes="0"/>
@@ -68,7 +68,7 @@
               <EmptySpace min="-2" pref="25" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="shJLabel" min="-2" max="-2" attributes="0"/>
-                  <Component id="shJTextField" min="-2" max="-2" attributes="0"/>
+                  <Component id="shJTextField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
@@ -116,6 +116,7 @@
     </Component>
     <Component class="javax.swing.JTextField" name="shJTextField">
       <Properties>
+        <Property name="columns" type="int" value="8"/>
         <Property name="editable" type="boolean" value="false"/>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="com/rubenlaguna/xbeemodule/Bundle.properties" key="XBeeTopComponent.shJTextField.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>

@@ -11,6 +11,8 @@ import com.rapplogic.xbee.api.XBeeAddress16;
 import com.rapplogic.xbee.api.XBeeAddress64;
 import com.rapplogic.xbee.api.XBeeException;
 import com.rapplogic.xbee.api.XBeeResponse;
+import com.rapplogic.xbee.api.XBeeTimeoutException;
+import com.rapplogic.xbee.api.zigbee.NodeDiscover;
 import com.rapplogic.xbee.api.zigbee.ZNetNodeIdentificationResponse;
 import com.rapplogic.xbee.util.IntArrayInputStream;
 import gnu.io.CommPortIdentifier;
@@ -50,13 +52,13 @@ final class XBeeTopComponent extends TopComponent {
     private static final String PREFERRED_ID = "XBeeTopComponent";
     private SerialPort serialPort;
     private static NodesTopComponent nodesInstance;
-
     private final InstanceContent instanceContent = new InstanceContent();
+
     private XBeeTopComponent() {
         initComponents();
         setName(NbBundle.getMessage(XBeeTopComponent.class, "CTL_XBeeTopComponent"));
         setToolTipText(NbBundle.getMessage(XBeeTopComponent.class, "HINT_XBeeTopComponent"));
-        associateLookup (new AbstractLookup (instanceContent));
+        associateLookup(new AbstractLookup(instanceContent));
         rescanJButtonActionPerformed(null);
 //        setIcon(Utilities.loadImage(ICON_PATH, true));
 
@@ -73,10 +75,6 @@ final class XBeeTopComponent extends TopComponent {
         targetNodeIdentifierJLabel = new javax.swing.JLabel();
         targetNodeIdentifierJTextField = new javax.swing.JTextField();
         performNodeDiscoveryJButton = new javax.swing.JButton();
-        shJLabel = new javax.swing.JLabel();
-        shJTextField = new javax.swing.JTextField();
-        slJLabel = new javax.swing.JLabel();
-        slJTextField = new javax.swing.JTextField();
         jPanel1 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         serialPortJComboBox = new javax.swing.JComboBox();
@@ -93,27 +91,6 @@ final class XBeeTopComponent extends TopComponent {
         performNodeDiscoveryJButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 performNodeDiscoveryJButtonActionPerformed(evt);
-            }
-        });
-
-        org.openide.awt.Mnemonics.setLocalizedText(shJLabel, org.openide.util.NbBundle.getMessage(XBeeTopComponent.class, "XBeeTopComponent.shJLabel.text")); // NOI18N
-
-        shJTextField.setColumns(8);
-        shJTextField.setEditable(false);
-        shJTextField.setText(org.openide.util.NbBundle.getMessage(XBeeTopComponent.class, "XBeeTopComponent.shJTextField.text")); // NOI18N
-        shJTextField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                shJTextFieldActionPerformed(evt);
-            }
-        });
-
-        org.openide.awt.Mnemonics.setLocalizedText(slJLabel, org.openide.util.NbBundle.getMessage(XBeeTopComponent.class, "XBeeTopComponent.slJLabel.text")); // NOI18N
-
-        slJTextField.setEditable(false);
-        slJTextField.setText(org.openide.util.NbBundle.getMessage(XBeeTopComponent.class, "XBeeTopComponent.slJTextField.text")); // NOI18N
-        slJTextField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                slJTextFieldActionPerformed(evt);
             }
         });
 
@@ -169,8 +146,8 @@ final class XBeeTopComponent extends TopComponent {
                         .add(jLabel1)))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(serialPortJComboBox, 0, 256, Short.MAX_VALUE)
-                    .add(speedJComboBox, 0, 256, Short.MAX_VALUE))
+                    .add(serialPortJComboBox, 0, 260, Short.MAX_VALUE)
+                    .add(speedJComboBox, 0, 260, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(rescanJButton)
                 .addContainerGap())
@@ -205,30 +182,16 @@ final class XBeeTopComponent extends TopComponent {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addContainerGap())
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(performNodeDiscoveryJButton)
-                        .add(20, 20, 20))
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(shJLabel)
-                            .add(slJLabel))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                            .add(slJTextField)
-                            .add(shJTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 118, Short.MAX_VALUE))
-                        .addContainerGap(316, Short.MAX_VALUE))
-                    .add(layout.createSequentialGroup()
-                        .add(115, 115, 115)
-                        .add(targetNodeIdentifierJTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 149, Short.MAX_VALUE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(nodeDestinationJButton)
-                        .addContainerGap())
+                    .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(targetNodeIdentifierJLabel)
-                        .addContainerGap(323, Short.MAX_VALUE))))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(targetNodeIdentifierJTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 107, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .add(nodeDestinationJButton)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .add(performNodeDiscoveryJButton)))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -238,18 +201,11 @@ final class XBeeTopComponent extends TopComponent {
                 .add(18, 18, 18)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
                     .add(targetNodeIdentifierJLabel)
-                    .add(targetNodeIdentifierJTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(targetNodeIdentifierJTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(performNodeDiscoveryJButton)
                     .add(nodeDestinationJButton))
-                .add(25, 25, 25)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(shJLabel)
-                    .add(shJTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(slJLabel)
-                    .add(slJTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(59, 59, 59)
-                .add(performNodeDiscoveryJButton)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -303,7 +259,7 @@ final class XBeeTopComponent extends TopComponent {
                         serialPortJComboBox.insertItemAt(item, 0);
                     }
                     serialPortJComboBox.insertItemAt("Select a port", 0);
-                    serialPortJComboBox.setSelectedIndex(serialPortJComboBox.getItemCount()-1);
+                    serialPortJComboBox.setSelectedIndex(serialPortJComboBox.getItemCount() - 1);
 
                 } catch (InterruptedException ex) {
                     Exceptions.printStackTrace(ex);
@@ -320,48 +276,60 @@ final class XBeeTopComponent extends TopComponent {
 }//GEN-LAST:event_serialPortJComboBoxActionPerformed
 
     private void performNodeDiscoveryJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_performNodeDiscoveryJButtonActionPerformed
-        SwingWorker sw = new SwingWorker<XBeeResponse, Void>() {
+
+        SwingWorker sw = new SwingWorker<XBee, Void>() {
 
             @Override
-            protected XBeeResponse doInBackground() throws Exception {
-                String targetNodeIdentifier = targetNodeIdentifierJTextField.getText();
-                int len = targetNodeIdentifier.length();
-                int[] value = new int[len];
+            protected XBee doInBackground() throws Exception {
 
-                for (int i = 0; i < len; i++) {
-                    value[i] = (int) targetNodeIdentifier.charAt(i);
-                }
-                AtCommand atCommand = new AtCommand("DN", value);
-                XBeeResponse toReturn = xbee.sendAtCommand(atCommand);
+                AtCommand atCommand = new AtCommand("ND");
+                xbee.sendAsynchronous(atCommand);
+                Thread.sleep(5000);
+                return xbee;
 
-                return toReturn;
             }
 
             @Override
             protected void done() {
-                try {
-                    Object o = get();
+
+                long packetCount = xbee.getPacketList().size();
+                while (packetCount > 0) {
+
+                    XBeeResponse o = xbee.getPacketList().remove(0);
                     if (o instanceof AtCommandResponse) {
                         AtCommandResponse atCommandResponse = (AtCommandResponse) o;
-                        if (!atCommandResponse.getCommand().equals("DN")) {
+                        if (!atCommandResponse.getCommand().equals("ND")) {
                             throw new RuntimeException("Wrong response. we were " +
                                     "expecting DN");
                         }
-                        int[] data = atCommandResponse.getValue();
-                        IntArrayInputStream in = new IntArrayInputStream(data);
-                        shJTextField.setText(new XBeeAddress16(in.read(2)).toString());
-                        slJTextField.setText(new XBeeAddress64(in.read(8)).toString());
+                        final NodeDiscover nd = NodeDiscover.parse((AtCommandResponse) atCommandResponse);
+                        XBeeDevice xd = new XBeeDevice() {
 
+                            public String getNodeIdentifier() {
+                                return nd.getNodeIdentifier();
+                            }
 
+                            public String getAddress16bit() {
+                                return nd.getNodeAddress16().toString();
+                            }
+
+                            public String getAddress64bit() {
+                                return nd.getNodeAddress64().toString();
+                            }
+                        };
+                        instanceContent.add(xd);
                     }
 
-                } catch (InterruptedException ex) {
-                    Exceptions.printStackTrace(ex);
-                } catch (ExecutionException ex) {
-                    Exceptions.printStackTrace(ex);
+                    //int[] data = atCommandResponse.getValue();
+                    //IntArrayInputStream in = new IntArrayInputStream(data);
+
+
+                    packetCount = xbee.getPacketList().size();
                 }
+
             }
         };
+        sw.execute();
 
 //        SwingWorker sw = new SwingWorker<Map<String, String>, Void>() {
 //
@@ -445,14 +413,6 @@ final class XBeeTopComponent extends TopComponent {
 //        sw.execute();
 }//GEN-LAST:event_performNodeDiscoveryJButtonActionPerformed
 
-    private void shJTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_shJTextFieldActionPerformed
-        // TODO add your handling code here:
-}//GEN-LAST:event_shJTextFieldActionPerformed
-
-    private void slJTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_slJTextFieldActionPerformed
-        // TODO add your handling code here:
-}//GEN-LAST:event_slJTextFieldActionPerformed
-
     private void serialPortJComboBoxPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_serialPortJComboBoxPropertyChange
         // TODO add your handling code here:
     }//GEN-LAST:event_serialPortJComboBoxPropertyChange
@@ -522,10 +482,6 @@ final class XBeeTopComponent extends TopComponent {
                             System.arraycopy(data, 2, shBytes, 0, 4);
                             System.arraycopy(data, 6, slBytes, 0, 4);
 
-                            // bytes 6-9 SL
-                            shJTextField.setText(HexUtils.toHexString(shBytes).toUpperCase());
-                            //bytes  2-5 SH
-                            slJTextField.setText(HexUtils.toHexString(slBytes).toUpperCase());
                             final String address64bit = HexUtils.toHexString(shBytes).toUpperCase() + HexUtils.toHexString(slBytes).toUpperCase();
                             XBeeDevice device = new XBeeDevice() {
 
@@ -542,7 +498,7 @@ final class XBeeTopComponent extends TopComponent {
                                 }
                             };
                             instanceContent.add(device);
-                            //nodesInstance.findInstance().addNode(targetNodeIdentifierJTextField.getText(), "N/A", address64bit);
+                        //nodesInstance.findInstance().addNode(targetNodeIdentifierJTextField.getText(), "N/A", address64bit);
 
                         }
                     }
@@ -568,10 +524,6 @@ final class XBeeTopComponent extends TopComponent {
     private javax.swing.JButton performNodeDiscoveryJButton;
     private javax.swing.JButton rescanJButton;
     private javax.swing.JComboBox serialPortJComboBox;
-    private javax.swing.JLabel shJLabel;
-    private javax.swing.JTextField shJTextField;
-    private javax.swing.JLabel slJLabel;
-    private javax.swing.JTextField slJTextField;
     private javax.swing.JComboBox speedJComboBox;
     private javax.swing.JLabel targetNodeIdentifierJLabel;
     private javax.swing.JTextField targetNodeIdentifierJTextField;

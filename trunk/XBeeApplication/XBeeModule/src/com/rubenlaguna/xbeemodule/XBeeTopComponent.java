@@ -32,6 +32,8 @@ import org.jdesktop.swingworker.SwingWorker;
 import org.jletty.util.HexUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 //import org.openide.util.Utilities;
@@ -43,16 +45,18 @@ final class XBeeTopComponent extends TopComponent {
 
     private static XBeeTopComponent instance;
     private XBee xbee = new XBee();
-    /** path to the icon used by the component and its open action */
+    /** path to the icon used byel the component and its open action */
 //    static final String ICON_PATH = "SET/PATH/TO/ICON/HERE";
     private static final String PREFERRED_ID = "XBeeTopComponent";
     private SerialPort serialPort;
     private static NodesTopComponent nodesInstance;
 
+    private final InstanceContent instanceContent = new InstanceContent();
     private XBeeTopComponent() {
         initComponents();
         setName(NbBundle.getMessage(XBeeTopComponent.class, "CTL_XBeeTopComponent"));
         setToolTipText(NbBundle.getMessage(XBeeTopComponent.class, "HINT_XBeeTopComponent"));
+        associateLookup (new AbstractLookup (instanceContent));
         rescanJButtonActionPerformed(null);
 //        setIcon(Utilities.loadImage(ICON_PATH, true));
 
@@ -94,6 +98,7 @@ final class XBeeTopComponent extends TopComponent {
 
         org.openide.awt.Mnemonics.setLocalizedText(shJLabel, org.openide.util.NbBundle.getMessage(XBeeTopComponent.class, "XBeeTopComponent.shJLabel.text")); // NOI18N
 
+        shJTextField.setColumns(8);
         shJTextField.setEditable(false);
         shJTextField.setText(org.openide.util.NbBundle.getMessage(XBeeTopComponent.class, "XBeeTopComponent.shJTextField.text")); // NOI18N
         shJTextField.addActionListener(new java.awt.event.ActionListener() {
@@ -211,19 +216,19 @@ final class XBeeTopComponent extends TopComponent {
                             .add(shJLabel)
                             .add(slJLabel))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(slJTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 378, Short.MAX_VALUE)
-                            .add(shJTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 378, Short.MAX_VALUE))
-                        .addContainerGap())
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                            .add(slJTextField)
+                            .add(shJTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 118, Short.MAX_VALUE))
+                        .addContainerGap(316, Short.MAX_VALUE))
                     .add(layout.createSequentialGroup()
                         .add(115, 115, 115)
-                        .add(targetNodeIdentifierJTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 147, Short.MAX_VALUE)
+                        .add(targetNodeIdentifierJTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 149, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(nodeDestinationJButton)
                         .addContainerGap())
                     .add(layout.createSequentialGroup()
                         .add(targetNodeIdentifierJLabel)
-                        .addContainerGap(298, Short.MAX_VALUE))))
+                        .addContainerGap(323, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -521,8 +526,23 @@ final class XBeeTopComponent extends TopComponent {
                             shJTextField.setText(HexUtils.toHexString(shBytes).toUpperCase());
                             //bytes  2-5 SH
                             slJTextField.setText(HexUtils.toHexString(slBytes).toUpperCase());
-                            String address64bit = HexUtils.toHexString(shBytes).toUpperCase() + HexUtils.toHexString(slBytes).toUpperCase();
-                            nodesInstance.findInstance().addNode(targetNodeIdentifierJTextField.getText(), "N/A", address64bit);
+                            final String address64bit = HexUtils.toHexString(shBytes).toUpperCase() + HexUtils.toHexString(slBytes).toUpperCase();
+                            XBeeDevice device = new XBeeDevice() {
+
+                                public String getNodeIdentifier() {
+                                    return targetNodeIdentifierJTextField.getText();
+                                }
+
+                                public String getAddress16bit() {
+                                    return "N/A";
+                                }
+
+                                public String getAddress64bit() {
+                                    return address64bit;
+                                }
+                            };
+                            instanceContent.add(device);
+                            //nodesInstance.findInstance().addNode(targetNodeIdentifierJTextField.getText(), "N/A", address64bit);
 
                         }
                     }

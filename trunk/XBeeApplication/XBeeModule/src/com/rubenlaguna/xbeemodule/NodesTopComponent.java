@@ -2,14 +2,18 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package com.rubenlaguna.xbeemodule;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Vector;
 import java.util.logging.Logger;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
+import org.openide.util.Lookup;
+import org.openide.util.Lookup.Result;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -18,22 +22,30 @@ import org.openide.windows.WindowManager;
 /**
  * Top component which displays something.
  */
-final class NodesTopComponent extends TopComponent {
+final class NodesTopComponent extends TopComponent implements LookupListener {
 
     private static NodesTopComponent instance;
+    private static Result<XBeeDevice> result;
     /** path to the icon used by the component and its open action */
 //    static final String ICON_PATH = "SET/PATH/TO/ICON/HERE";
-
     private static final String PREFERRED_ID = "NodesTopComponent";
 
     private NodesTopComponent() {
         initComponents();
-        DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
-        model.setRowCount(0);
+        clearTable();
         setName(NbBundle.getMessage(NodesTopComponent.class, "CTL_NodesTopComponent"));
         setToolTipText(NbBundle.getMessage(NodesTopComponent.class, "HINT_NodesTopComponent"));
+        Lookup lookup = XBeeTopComponent.findInstance().getLookup();
+        result = lookup.lookupResult(XBeeDevice.class);
+        result.addLookupListener(this);
+        resultChanged(null);
 //        setIcon(Utilities.loadImage(ICON_PATH, true));
-        
+
+    }
+
+    private void clearTable() {
+        DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
+        model.setRowCount(0);
     }
 
     /** This method is called from within the constructor to
@@ -93,12 +105,11 @@ final class NodesTopComponent extends TopComponent {
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
-
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTable jTable1;
     // End of variables declaration//GEN-END:variables
+
     /**
      * Gets default instance. Do not use directly: reserved for *.settings files only,
      * i.e. deserialization routines; otherwise you could get a non-deserialized instance.
@@ -130,17 +141,16 @@ final class NodesTopComponent extends TopComponent {
         return getDefault();
     }
 
-    public void addNode(String nodeIdentifier, String address16bit, String address64bit)
-    {
+    public void addNode(String nodeIdentifier, String address16bit, String address64bit) {
         DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
 
         int count = model.getRowCount();
 
-        model.addRow(new Object[] {nodeIdentifier,address16bit,address64bit});
-        //model.setValueAt(nodeIdentifier, 0, 0);
-        //model.setValueAt(address16bit, 0, 1);
-        //model.setValueAt(address64bits, 0, 2);
-        
+        model.addRow(new Object[]{nodeIdentifier, address16bit, address64bit});
+    //model.setValueAt(nodeIdentifier, 0, 0);
+    //model.setValueAt(address16bit, 0, 1);
+    //model.setValueAt(address64bits, 0, 2);
+
     }
 
     @Override
@@ -167,6 +177,15 @@ final class NodesTopComponent extends TopComponent {
     @Override
     protected String preferredID() {
         return PREFERRED_ID;
+    }
+
+    public void resultChanged(LookupEvent arg0) {
+        Collection<? extends XBeeDevice> instances = result.allInstances();
+        clearTable();
+        for (XBeeDevice xd : instances) {
+            addNode(xd.getNodeIdentifier(), xd.getAddress16bit(), xd.getAddress64bit());
+        }
+
     }
 
     final static class ResolvableHelper implements Serializable {

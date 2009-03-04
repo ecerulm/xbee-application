@@ -4,11 +4,18 @@
  */
 package com.rubenlaguna.xbeemodule;
 
+import java.awt.Component;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Vector;
 import java.util.logging.Logger;
+import javax.swing.JTable;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
+import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Result;
@@ -39,8 +46,53 @@ final class NodesTopComponent extends TopComponent implements LookupListener {
         result = lookup.lookupResult(XBeeDevice.class);
         result.addLookupListener(this);
         resultChanged(null);
+        jTable1.getModel().addTableModelListener(new TableModelListener() {
+            public void tableChanged(TableModelEvent e) {
+                packColumns(jTable1, 2);
+            }
+        });
 //        setIcon(Utilities.loadImage(ICON_PATH, true));
 
+    }
+
+    public void packColumns(JTable table, int margin) {
+        for (int c = 0; c < table.getColumnCount(); c++) {
+            packColumn(table, c, 2);
+        }
+    }
+    // Sets the preferred width of the visible column specified by vColIndex. The column
+    // will be just wide enough to show the column head and the widest cell in the column.
+    // margin pixels are added to the left and right
+    // (resulting in an additional width of 2*margin pixels).
+
+    public void packColumn(JTable table, int vColIndex, int margin) {
+        TableModel model = table.getModel();
+        DefaultTableColumnModel colModel = (DefaultTableColumnModel) table.getColumnModel();
+        TableColumn col = colModel.getColumn(vColIndex);
+        int width = 0;
+
+        // Get width of column header
+        TableCellRenderer renderer = col.getHeaderRenderer();
+        if (renderer == null) {
+            renderer = table.getTableHeader().getDefaultRenderer();
+        }
+        Component comp = renderer.getTableCellRendererComponent(
+                table, col.getHeaderValue(), false, false, 0, 0);
+        width = comp.getPreferredSize().width;
+
+        // Get maximum width of column data
+        for (int r = 0; r < table.getRowCount(); r++) {
+            renderer = table.getCellRenderer(r, vColIndex);
+            comp = renderer.getTableCellRendererComponent(
+                    table, table.getValueAt(r, vColIndex), false, false, r, vColIndex);
+            width = Math.max(width, comp.getPreferredSize().width);
+        }
+
+        // Add margin
+        width += 2 * margin;
+
+        // Set the width
+        col.setPreferredWidth(width);
     }
 
     private void clearTable() {
@@ -86,7 +138,13 @@ final class NodesTopComponent extends TopComponent implements LookupListener {
                 return canEdit [columnIndex];
             }
         });
+        jTable1.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
+        jTable1.setColumnSelectionAllowed(true);
         jScrollPane1.setViewportView(jTable1);
+        jTable1.getColumnModel().getSelectionModel().setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        jTable1.getColumnModel().getColumn(0).setHeaderValue(org.openide.util.NbBundle.getMessage(NodesTopComponent.class, "NodesTopComponent.jTable1.columnModel.title0")); // NOI18N
+        jTable1.getColumnModel().getColumn(1).setHeaderValue(org.openide.util.NbBundle.getMessage(NodesTopComponent.class, "NodesTopComponent.jTable1.columnModel.title1")); // NOI18N
+        jTable1.getColumnModel().getColumn(2).setHeaderValue(org.openide.util.NbBundle.getMessage(NodesTopComponent.class, "NodesTopComponent.jTable1.columnModel.title2")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);

@@ -292,39 +292,46 @@ final class XBeeTopComponent extends TopComponent {
             @Override
             protected void done() {
 
-                long packetCount = xbee.getPacketList().size();
-                while (packetCount > 0) {
+                //long packetCount = xbee.getPacketList().size();
+                while ( xbee.getPacketList().size() > 0) {
+                    try {
+                        //XBeeResponse o = xbee.getPacketList().remove(0);
+                        XBeeResponse o = null;
 
-                    XBeeResponse o = xbee.getPacketList().remove(0);
-                    if (o instanceof AtCommandResponse) {
-                        AtCommandResponse atCommandResponse = (AtCommandResponse) o;
-                        if (!atCommandResponse.getCommand().equals("ND")) {
-                            throw new RuntimeException("Wrong response. we were " +
-                                    "expecting DN");
+                        o = xbee.getResponse();
+
+                        if ((o != null) && (o instanceof AtCommandResponse)) {
+                            AtCommandResponse atCommandResponse = (AtCommandResponse) o;
+                            if (!atCommandResponse.getCommand().equals("ND")) {
+                                throw new RuntimeException("Wrong response. we were " +
+                                        "expecting DN");
+                            }
+                            final NodeDiscover nd = NodeDiscover.parse((AtCommandResponse) atCommandResponse);
+                            XBeeDevice xd = new XBeeDevice() {
+
+                                public String getNodeIdentifier() {
+                                    return nd.getNodeIdentifier();
+                                }
+
+                                public String getAddress16bit() {
+                                    return nd.getNodeAddress16().toString();
+                                }
+
+                                public String getAddress64bit() {
+                                    return nd.getNodeAddress64().toString();
+                                }
+                            };
+                            instanceContent.add(xd);
                         }
-                        final NodeDiscover nd = NodeDiscover.parse((AtCommandResponse) atCommandResponse);
-                        XBeeDevice xd = new XBeeDevice() {
-
-                            public String getNodeIdentifier() {
-                                return nd.getNodeIdentifier();
-                            }
-
-                            public String getAddress16bit() {
-                                return nd.getNodeAddress16().toString();
-                            }
-
-                            public String getAddress64bit() {
-                                return nd.getNodeAddress64().toString();
-                            }
-                        };
-                        instanceContent.add(xd);
+                    } catch (XBeeException ex) {
+                        Exceptions.printStackTrace(ex);
                     }
 
                     //int[] data = atCommandResponse.getValue();
                     //IntArrayInputStream in = new IntArrayInputStream(data);
 
 
-                    packetCount = xbee.getPacketList().size();
+                   
                 }
 
             }

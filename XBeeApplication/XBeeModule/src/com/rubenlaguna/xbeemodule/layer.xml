@@ -3,6 +3,12 @@
 <filesystem>
     <folder name="Actions">
         <folder name="Window">
+            <file name="com-rubenlaguna-xbeemodule-CommandAction.instance">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="com.rubenlaguna.xbeemodule.Bundle"/>
+                <attr name="component" methodvalue="com.rubenlaguna.xbeemodule.CommandTopComponent.findInstance"/>
+                <attr name="displayName" bundlevalue="com.rubenlaguna.xbeemodule.Bundle#CTL_CommandAction"/>
+                <attr name="instanceCreate" methodvalue="org.openide.windows.TopComponent.openAction"/>
+            </file>
             <file name="com-rubenlaguna-xbeemodule-NodesAction.instance">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="com.rubenlaguna.xbeemodule.Bundle"/>
                 <attr name="component" methodvalue="com.rubenlaguna.xbeemodule.NodesTopComponent.findInstance"/>
@@ -19,6 +25,9 @@
     </folder>
     <folder name="Menu">
         <folder name="Window">
+            <file name="CommandAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/com-rubenlaguna-xbeemodule-CommandAction.instance"/>
+            </file>
             <file name="NodesAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/com-rubenlaguna-xbeemodule-NodesAction.instance"/>
             </file>
@@ -29,10 +38,14 @@
     </folder>
     <folder name="Windows2">
         <folder name="Components">
+            <file name="CommandTopComponent.settings" url="CommandTopComponentSettings.xml"/>
             <file name="NodesTopComponent.settings" url="NodesTopComponentSettings.xml"/>
             <file name="XBeeTopComponent.settings" url="XBeeTopComponentSettings.xml"/>
         </folder>
         <folder name="Modes">
+            <folder name="editor">
+                <file name="CommandTopComponent.wstcref" url="CommandTopComponentWstcref.xml"/>
+            </folder>
             <folder name="explorer">
                 <file name="XBeeTopComponent.wstcref" url="XBeeTopComponentWstcref.xml"/>
             </folder>

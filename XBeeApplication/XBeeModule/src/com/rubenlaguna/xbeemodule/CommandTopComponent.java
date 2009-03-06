@@ -18,11 +18,14 @@
  * You should have received a copy of the GNU General Public License
  * along with XBeeApplication.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package com.rubenlaguna.xbeemodule;
 
 import java.io.Serializable;
+import java.util.Iterator;
 import java.util.logging.Logger;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -31,20 +34,21 @@ import org.openide.windows.WindowManager;
 /**
  * Top component which displays something.
  */
-final class CommandTopComponent extends TopComponent {
+final class CommandTopComponent extends TopComponent implements LookupListener {
 
     private static CommandTopComponent instance;
     /** path to the icon used by the component and its open action */
 //    static final String ICON_PATH = "SET/PATH/TO/ICON/HERE";
-
     private static final String PREFERRED_ID = "CommandTopComponent";
+    private static Lookup.Result result;
 
     private CommandTopComponent() {
         initComponents();
         setName(NbBundle.getMessage(CommandTopComponent.class, "CTL_CommandTopComponent"));
         setToolTipText(NbBundle.getMessage(CommandTopComponent.class, "HINT_CommandTopComponent"));
 //        setIcon(Utilities.loadImage(ICON_PATH, true));
-        
+        result = NodesTopComponent.findInstance().getLookup().lookupResult(String.class);
+        result.addLookupListener(this);
     }
 
     /** This method is called from within the constructor to
@@ -55,12 +59,12 @@ final class CommandTopComponent extends TopComponent {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
-        jButton3 = new javax.swing.JButton();
-        jButton4 = new javax.swing.JButton();
-        jLabel1 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
+        readTemperatureJButton = new javax.swing.JButton();
+        readIlluminanceJButton = new javax.swing.JButton();
+        readHeadingJButton = new javax.swing.JButton();
+        readTiltJButton = new javax.swing.JButton();
+        tempJLabel = new javax.swing.JLabel();
+        illuminanceJLabel = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
@@ -68,18 +72,24 @@ final class CommandTopComponent extends TopComponent {
         jLabel7 = new javax.swing.JLabel();
         jLabel8 = new javax.swing.JLabel();
         jLabel9 = new javax.swing.JLabel();
+        selectedAddressJLabel = new javax.swing.JLabel();
 
-        org.openide.awt.Mnemonics.setLocalizedText(jButton1, org.openide.util.NbBundle.getMessage(CommandTopComponent.class, "CommandTopComponent.jButton1.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(readTemperatureJButton, org.openide.util.NbBundle.getMessage(CommandTopComponent.class, "CommandTopComponent.readTemperatureJButton.text")); // NOI18N
+        readTemperatureJButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                readTemperatureJButtonActionPerformed(evt);
+            }
+        });
 
-        org.openide.awt.Mnemonics.setLocalizedText(jButton2, org.openide.util.NbBundle.getMessage(CommandTopComponent.class, "CommandTopComponent.jButton2.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(readIlluminanceJButton, org.openide.util.NbBundle.getMessage(CommandTopComponent.class, "CommandTopComponent.readIlluminanceJButton.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jButton3, org.openide.util.NbBundle.getMessage(CommandTopComponent.class, "CommandTopComponent.jButton3.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(readHeadingJButton, org.openide.util.NbBundle.getMessage(CommandTopComponent.class, "CommandTopComponent.readHeadingJButton.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jButton4, org.openide.util.NbBundle.getMessage(CommandTopComponent.class, "CommandTopComponent.jButton4.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(readTiltJButton, org.openide.util.NbBundle.getMessage(CommandTopComponent.class, "CommandTopComponent.readTiltJButton.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(CommandTopComponent.class, "CommandTopComponent.jLabel1.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(tempJLabel, org.openide.util.NbBundle.getMessage(CommandTopComponent.class, "CommandTopComponent.tempJLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(CommandTopComponent.class, "CommandTopComponent.jLabel2.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(illuminanceJLabel, org.openide.util.NbBundle.getMessage(CommandTopComponent.class, "CommandTopComponent.illuminanceJLabel.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(CommandTopComponent.class, "CommandTopComponent.jLabel3.text")); // NOI18N
 
@@ -95,6 +105,8 @@ final class CommandTopComponent extends TopComponent {
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel9, org.openide.util.NbBundle.getMessage(CommandTopComponent.class, "CommandTopComponent.jLabel9.text")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(selectedAddressJLabel, org.openide.util.NbBundle.getMessage(CommandTopComponent.class, "CommandTopComponent.selectedAddressJLabel.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -103,19 +115,19 @@ final class CommandTopComponent extends TopComponent {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(jButton1)
+                        .add(readTemperatureJButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jLabel1))
+                        .add(tempJLabel))
                     .add(layout.createSequentialGroup()
-                        .add(jButton2)
+                        .add(readIlluminanceJButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jLabel2))
+                        .add(illuminanceJLabel))
                     .add(layout.createSequentialGroup()
-                        .add(jButton3)
+                        .add(readHeadingJButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(jLabel3))
                     .add(layout.createSequentialGroup()
-                        .add(jButton4)
+                        .add(readTiltJButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(jLabel4)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -127,48 +139,47 @@ final class CommandTopComponent extends TopComponent {
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(jLabel8)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jLabel9)))
-                .addContainerGap(93, Short.MAX_VALUE))
+                        .add(jLabel9))
+                    .add(selectedAddressJLabel))
+                .addContainerGap(90, Short.MAX_VALUE))
         );
 
-        layout.linkSize(new java.awt.Component[] {jButton1, jButton2, jButton3, jButton4}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+        layout.linkSize(new java.awt.Component[] {readHeadingJButton, readIlluminanceJButton, readTemperatureJButton, readTiltJButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
 
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jButton1)
-                    .add(jLabel1))
+                    .add(readTemperatureJButton)
+                    .add(tempJLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jButton2)
-                    .add(jLabel2))
+                    .add(readIlluminanceJButton)
+                    .add(illuminanceJLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jButton3)
+                    .add(readHeadingJButton)
                     .add(jLabel3))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jButton4)
+                    .add(readTiltJButton)
                     .add(jLabel4)
                     .add(jLabel5)
                     .add(jLabel6)
                     .add(jLabel7)
                     .add(jLabel8)
                     .add(jLabel9))
-                .addContainerGap(155, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 119, Short.MAX_VALUE)
+                .add(selectedAddressJLabel)
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
-
+    private void readTemperatureJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_readTemperatureJButtonActionPerformed
+}//GEN-LAST:event_readTemperatureJButtonActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
-    private javax.swing.JButton jButton4;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel illuminanceJLabel;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
@@ -176,7 +187,14 @@ final class CommandTopComponent extends TopComponent {
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
+    private javax.swing.JButton readHeadingJButton;
+    private javax.swing.JButton readIlluminanceJButton;
+    private javax.swing.JButton readTemperatureJButton;
+    private javax.swing.JButton readTiltJButton;
+    private javax.swing.JLabel selectedAddressJLabel;
+    private javax.swing.JLabel tempJLabel;
     // End of variables declaration//GEN-END:variables
+
     /**
      * Gets default instance. Do not use directly: reserved for *.settings files only,
      * i.e. deserialization routines; otherwise you could get a non-deserialized instance.
@@ -232,6 +250,14 @@ final class CommandTopComponent extends TopComponent {
     @Override
     protected String preferredID() {
         return PREFERRED_ID;
+    }
+
+    public void resultChanged(LookupEvent ev) {
+        Iterator it = result.allInstances().iterator();
+        if (it.hasNext()) {
+            Object o = it.next();
+            selectedAddressJLabel.setText(o.toString());
+        }
     }
 
     final static class ResolvableHelper implements Serializable {

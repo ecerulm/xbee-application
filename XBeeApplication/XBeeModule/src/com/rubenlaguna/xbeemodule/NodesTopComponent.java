@@ -26,6 +26,9 @@ import java.util.Collection;
 import java.util.Vector;
 import java.util.logging.Logger;
 import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableColumnModel;
@@ -38,6 +41,10 @@ import org.openide.util.Lookup.Result;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 //import org.openide.util.Utilities;
@@ -52,10 +59,15 @@ final class NodesTopComponent extends TopComponent implements LookupListener {
     /** path to the icon used by the component and its open action */
 //    static final String ICON_PATH = "SET/PATH/TO/ICON/HERE";
     private static final String PREFERRED_ID = "NodesTopComponent";
-
+    //private final InstanceContent instanceContent = new InstanceContent();
+    private static final InstanceContent instanceContent = new InstanceContent();
+    //private static final Lookup lookup = Lookups.singleton(null);
+    //private Object selectedItem = new Object();
     private NodesTopComponent() {
         initComponents();
         clearTable();
+        //associateLookup(new AbstractLookup(instanceContent));
+        associateLookup(new AbstractLookup(instanceContent));
         setName(NbBundle.getMessage(NodesTopComponent.class, "CTL_NodesTopComponent"));
         setToolTipText(NbBundle.getMessage(NodesTopComponent.class, "HINT_NodesTopComponent"));
         Lookup lookup = XBeeTopComponent.findInstance().getLookup();
@@ -65,6 +77,20 @@ final class NodesTopComponent extends TopComponent implements LookupListener {
         jTable1.getModel().addTableModelListener(new TableModelListener() {
             public void tableChanged(TableModelEvent e) {
                 packColumns(jTable1, 2);
+            }
+        });
+        jTable1.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+
+            public void valueChanged(ListSelectionEvent e) {
+                ListSelectionModel lsm = (ListSelectionModel)e.getSource();
+                if (lsm.isSelectionEmpty()) return;
+                if(lsm.isSelectedIndex(lsm.getMinSelectionIndex())) {
+                     Object addr = jTable1.getModel().getValueAt(lsm.getMinSelectionIndex(), 2);
+                     String old = getLookup().lookup(String.class);
+                     if (null!=old) instanceContent.remove(old);
+                     instanceContent.add(addr.toString());
+                }
+                
             }
         });
 //        setIcon(Utilities.loadImage(ICON_PATH, true));
@@ -155,7 +181,8 @@ final class NodesTopComponent extends TopComponent implements LookupListener {
             }
         });
         jTable1.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
-        jTable1.setColumnSelectionAllowed(true);
+        jTable1.setCellSelectionEnabled(false);
+        jTable1.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         jScrollPane1.setViewportView(jTable1);
         jTable1.getColumnModel().getSelectionModel().setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         jTable1.getColumnModel().getColumn(0).setHeaderValue(org.openide.util.NbBundle.getMessage(NodesTopComponent.class, "NodesTopComponent.jTable1.columnModel.title0")); // NOI18N

@@ -20,12 +20,14 @@
  */
 package com.rubenlaguna.xbeemodule;
 
+import com.rapplogic.xbee.api.ApiId;
 import com.rapplogic.xbee.api.XBee;
 import com.rapplogic.xbee.api.XBeeAddress16;
 import com.rapplogic.xbee.api.XBeeAddress64;
 import com.rapplogic.xbee.api.XBeeRequest;
 import com.rapplogic.xbee.api.XBeeResponse;
 import com.rapplogic.xbee.api.zigbee.NodeDiscover;
+import com.rapplogic.xbee.api.zigbee.ZNetExplicitRxResponse;
 import com.rapplogic.xbee.api.zigbee.ZNetExplicitTxRequest;
 import com.rapplogic.xbee.api.zigbee.ZNetTxRequest;
 import com.rapplogic.xbee.util.DoubleByte;
@@ -199,30 +201,41 @@ final class CommandTopComponent extends TopComponent implements LookupListener {
             return;
         }
 
-        SwingWorker sw = new SwingWorker<XBeeResponse, Void>() {
+        SwingWorker sw = new SwingWorker<ZNetExplicitRxResponse, Void>() {
 
             @Override
-            protected XBeeResponse doInBackground() throws Exception {
+            protected ZNetExplicitRxResponse doInBackground() throws Exception {
 
 
                 XBeeAddress64 addr64 = xd.getNodeAddress64();
                 XBeeAddress16 addr16 = xd.getNodeAddress16();
                 DoubleByte clusterId = new DoubleByte(0x04, 0x02);
-                int[] payload = new int[]{0x00, 0x00, 0x00}; //read command 0x00, attribute 0x00 0x00 temperature
+                int[] payload = new int[]{0x00,0x01,0x00, 0x00, 0x00}; //zcl header, transaction id, read command 0x00, attribute 0x00 0x00 temperature
 
                 // first request we just send 64-bit address.  we get 16-bit network address with status response
                 ZNetExplicitTxRequest request = new ZNetExplicitTxRequest(xbee.getNextFrameId(), addr64, addr16,
                         ZNetTxRequest.DEFAULT_BROADCAST_RADIUS, ZNetTxRequest.UNICAST_OPTION, payload, 0x01, 0x01, clusterId, new DoubleByte(0x01, 0x04));
 
                 xbee.sendAsynchronous(request);
-                XBeeResponse response = xbee.getResponse(5000);
-                return response;
+                while (true) {
+                    XBeeResponse response = xbee.getResponse(5000);
+                    if (response.getApiId() == ApiId.ZNET_EXPLICIT_RX_RESPONSE) {
+                        return (ZNetExplicitRxResponse)response;
+                    }
+
+                }
             }
 
             @Override
             protected void done() {
                 try {
-                    tempJLabel.setText(get().toString());
+                    ZNetExplicitRxResponse resp = get();
+                    int[] bytes = resp.getData();
+                    int temp = bytes[bytes.length-2];
+                    temp = temp << 8;
+                    temp = temp + bytes[bytes.length-1];
+                    String toTxt = Double.toString(temp/100.0);
+                    tempJLabel.setText(toTxt);
                 } catch (InterruptedException ex) {
                     Exceptions.printStackTrace(ex);
                 } catch (ExecutionException ex) {

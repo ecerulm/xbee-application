@@ -20,6 +20,7 @@
  */
 package com.rubenlaguna.xbeemodule;
 
+import com.rapplogic.xbee.api.zigbee.NodeDiscover;
 import java.awt.Component;
 import java.io.Serializable;
 import java.util.Collection;
@@ -31,6 +32,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
@@ -55,7 +57,7 @@ import org.openide.windows.WindowManager;
 final class NodesTopComponent extends TopComponent implements LookupListener {
 
     private static NodesTopComponent instance;
-    private static Result<XBeeDevice> result;
+    private static Result<NodeDiscover> result;
     /** path to the icon used by the component and its open action */
 //    static final String ICON_PATH = "SET/PATH/TO/ICON/HERE";
     private static final String PREFERRED_ID = "NodesTopComponent";
@@ -63,6 +65,7 @@ final class NodesTopComponent extends TopComponent implements LookupListener {
     private static final InstanceContent instanceContent = new InstanceContent();
     //private static final Lookup lookup = Lookups.singleton(null);
     //private Object selectedItem = new Object();
+
     private NodesTopComponent() {
         initComponents();
         clearTable();
@@ -71,10 +74,15 @@ final class NodesTopComponent extends TopComponent implements LookupListener {
         setName(NbBundle.getMessage(NodesTopComponent.class, "CTL_NodesTopComponent"));
         setToolTipText(NbBundle.getMessage(NodesTopComponent.class, "HINT_NodesTopComponent"));
         Lookup lookup = XBeeTopComponent.findInstance().getLookup();
-        result = lookup.lookupResult(XBeeDevice.class);
+        result = lookup.lookupResult(NodeDiscover.class);
         result.addLookupListener(this);
         resultChanged(null);
+        jTable1.getColumnModel().getColumn(0).setCellRenderer(new NodeIdentifierCellRenderer());
+        jTable1.getColumnModel().getColumn(1).setCellRenderer(new XBeeAddress16CellRenderer());
+        jTable1.getColumnModel().getColumn(2).setCellRenderer(new XBeeAddress64CellRenderer());
+
         jTable1.getModel().addTableModelListener(new TableModelListener() {
+
             public void tableChanged(TableModelEvent e) {
                 packColumns(jTable1, 2);
             }
@@ -82,15 +90,19 @@ final class NodesTopComponent extends TopComponent implements LookupListener {
         jTable1.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
 
             public void valueChanged(ListSelectionEvent e) {
-                ListSelectionModel lsm = (ListSelectionModel)e.getSource();
-                if (lsm.isSelectionEmpty()) return;
-                if(lsm.isSelectedIndex(lsm.getMinSelectionIndex())) {
-                     Object addr = jTable1.getModel().getValueAt(lsm.getMinSelectionIndex(), 2);
-                     String old = getLookup().lookup(String.class);
-                     if (null!=old) instanceContent.remove(old);
-                     instanceContent.add(addr.toString());
+                ListSelectionModel lsm = (ListSelectionModel) e.getSource();
+                if (lsm.isSelectionEmpty()) {
+                    return;
                 }
-                
+                if (lsm.isSelectedIndex(lsm.getMinSelectionIndex())) {
+                    Object nodediscover = jTable1.getModel().getValueAt(lsm.getMinSelectionIndex(), 2);
+                    NodeDiscover old = getLookup().lookup(NodeDiscover.class);
+                    if (null != old) {
+                        instanceContent.remove(old);
+                    }
+                    instanceContent.add(nodediscover);
+                }
+
             }
         });
 //        setIcon(Utilities.loadImage(ICON_PATH, true));
@@ -242,18 +254,22 @@ final class NodesTopComponent extends TopComponent implements LookupListener {
         return getDefault();
     }
 
-    public void addNode(String nodeIdentifier, String address16bit, String address64bit) {
+    private void addNode(NodeDiscover xd) {
         DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
-
-        int count = model.getRowCount();
-
-        model.addRow(new Object[]{nodeIdentifier, address16bit, address64bit});
-    //model.setValueAt(nodeIdentifier, 0, 0);
-    //model.setValueAt(address16bit, 0, 1);
-    //model.setValueAt(address64bits, 0, 2);
-
+        model.addRow(new Object[]{xd, xd, xd});
     }
 
+//    public void addNode(String nodeIdentifier, String address16bit, String address64bit) {
+//        DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
+//
+//        int count = model.getRowCount();
+//
+//        model.addRow(new Object[]{nodeIdentifier, address16bit, address64bit});
+//    //model.setValueAt(nodeIdentifier, 0, 0);
+//    //model.setValueAt(address16bit, 0, 1);
+//    //model.setValueAt(address64bits, 0, 2);
+//
+//    }
     @Override
     public int getPersistenceType() {
         return TopComponent.PERSISTENCE_ALWAYS;
@@ -281,10 +297,10 @@ final class NodesTopComponent extends TopComponent implements LookupListener {
     }
 
     public void resultChanged(LookupEvent arg0) {
-        Collection<? extends XBeeDevice> instances = result.allInstances();
+        Collection<? extends NodeDiscover> instances = result.allInstances();
         clearTable();
-        for (XBeeDevice xd : instances) {
-            addNode(xd.getNodeIdentifier(), xd.getAddress16bit(), xd.getAddress64bit());
+        for (NodeDiscover xd : instances) {
+            addNode(xd);
         }
 
     }
@@ -295,6 +311,30 @@ final class NodesTopComponent extends TopComponent implements LookupListener {
 
         public Object readResolve() {
             return NodesTopComponent.getDefault();
+        }
+    }
+
+    final static class NodeIdentifierCellRenderer extends DefaultTableCellRenderer {
+
+        public void setValue(Object value) {
+            NodeDiscover xd = (NodeDiscover) value;
+            setText(xd.getNodeIdentifier());
+        }
+    }
+
+    final static class XBeeAddress16CellRenderer extends DefaultTableCellRenderer {
+
+        public void setValue(Object value) {
+            NodeDiscover xd = (NodeDiscover) value;
+            setText(xd.getNodeAddress16().toString());
+        }
+    }
+
+    final static class XBeeAddress64CellRenderer extends DefaultTableCellRenderer {
+
+        public void setValue(Object value) {
+            NodeDiscover xd = (NodeDiscover) value;
+            setText(xd.getNodeAddress64().toString());
         }
     }
 }

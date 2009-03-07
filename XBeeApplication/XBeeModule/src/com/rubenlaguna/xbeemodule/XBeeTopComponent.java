@@ -339,21 +339,21 @@ final class XBeeTopComponent extends TopComponent {
                                         "expecting DN");
                             }
                             final NodeDiscover nd = NodeDiscover.parse((AtCommandResponse) atCommandResponse);
-                            XBeeDevice xd = new XBeeDevice() {
-
-                                public String getNodeIdentifier() {
-                                    return nd.getNodeIdentifier();
-                                }
-
-                                public String getAddress16bit() {
-                                    return nd.getNodeAddress16().toString();
-                                }
-
-                                public String getAddress64bit() {
-                                    return nd.getNodeAddress64().toString();
-                                }
-                            };
-                            instanceContent.add(xd);
+//                            XBeeDevice xd = new XBeeDevice() {
+//
+//                                public String getNodeIdentifier() {
+//                                    return nd.getNodeIdentifier();
+//                                }
+//
+//                                public String getAddress16bit() {
+//                                    return nd.getNodeAddress16().toString();
+//                                }
+//
+//                                public String getAddress64bit() {
+//                                    return nd.getNodeAddress64().toString();
+//                                }
+//                            };
+                            instanceContent.add(nd);
                         }
                     } catch (XBeeException ex) {
                         Exceptions.printStackTrace(ex);

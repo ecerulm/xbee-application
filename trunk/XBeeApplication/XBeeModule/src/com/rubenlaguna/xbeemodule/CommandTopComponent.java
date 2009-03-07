@@ -20,9 +20,21 @@
  */
 package com.rubenlaguna.xbeemodule;
 
+import com.rapplogic.xbee.api.XBee;
+import com.rapplogic.xbee.api.XBeeAddress16;
+import com.rapplogic.xbee.api.XBeeAddress64;
+import com.rapplogic.xbee.api.XBeeRequest;
+import com.rapplogic.xbee.api.XBeeResponse;
+import com.rapplogic.xbee.api.zigbee.NodeDiscover;
+import com.rapplogic.xbee.api.zigbee.ZNetExplicitTxRequest;
+import com.rapplogic.xbee.api.zigbee.ZNetTxRequest;
+import com.rapplogic.xbee.util.DoubleByte;
 import java.io.Serializable;
 import java.util.Iterator;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
+import org.jdesktop.swingworker.SwingWorker;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -40,14 +52,14 @@ final class CommandTopComponent extends TopComponent implements LookupListener {
     /** path to the icon used by the component and its open action */
 //    static final String ICON_PATH = "SET/PATH/TO/ICON/HERE";
     private static final String PREFERRED_ID = "CommandTopComponent";
-    private static Lookup.Result result;
+    private static Lookup.Result<NodeDiscover> result;
 
     private CommandTopComponent() {
         initComponents();
         setName(NbBundle.getMessage(CommandTopComponent.class, "CTL_CommandTopComponent"));
         setToolTipText(NbBundle.getMessage(CommandTopComponent.class, "HINT_CommandTopComponent"));
 //        setIcon(Utilities.loadImage(ICON_PATH, true));
-        result = NodesTopComponent.findInstance().getLookup().lookupResult(String.class);
+        result = NodesTopComponent.findInstance().getLookup().lookupResult(NodeDiscover.class);
         result.addLookupListener(this);
     }
 
@@ -177,6 +189,56 @@ final class CommandTopComponent extends TopComponent implements LookupListener {
     }// </editor-fold>//GEN-END:initComponents
 
     private void readTemperatureJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_readTemperatureJButtonActionPerformed
+
+        final XBee xbee = XBeeTopComponent.findInstance().getLookup().lookup(XBee.class);
+        if (null == xbee) {
+            return;
+        }
+        final NodeDiscover xd = NodesTopComponent.findInstance().getLookup().lookup(NodeDiscover.class);
+        if (null == xd) {
+            return;
+        }
+
+        SwingWorker sw = new SwingWorker<XBeeResponse, Void>() {
+
+            @Override
+            protected XBeeResponse doInBackground() throws Exception {
+
+
+                XBeeAddress64 addr64 = xd.getNodeAddress64();
+                XBeeAddress16 addr16 = xd.getNodeAddress16();
+                DoubleByte clusterId = new DoubleByte(0x04, 0x02);
+                int[] payload = new int[]{0x00, 0x00, 0x00}; //read command 0x00, attribute 0x00 0x00 temperature
+
+                // first request we just send 64-bit address.  we get 16-bit network address with status response
+                ZNetExplicitTxRequest request = new ZNetExplicitTxRequest(xbee.getNextFrameId(), addr64, addr16,
+                        ZNetTxRequest.DEFAULT_BROADCAST_RADIUS, ZNetTxRequest.UNICAST_OPTION, payload, 0x01, 0x01, clusterId, new DoubleByte(0x01, 0x04));
+
+                xbee.sendAsynchronous(request);
+                XBeeResponse response = xbee.getResponse(5000);
+                return response;
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    tempJLabel.setText(get().toString());
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (ExecutionException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        };
+        sw.execute();
+
+
+    // replace with end device's 64-bit address (SH + SL)
+    //XBeeAddress64 addr64 = new XBeeAddress64(0, 0x13, 0xa2, 0, 0x40, 0x0a, 0x3e, 0x02);
+
+    //XBeeRequest frameData = new XBeeRequest();
+    //xbee.sendAsynchronous(frameData);
+
 }//GEN-LAST:event_readTemperatureJButtonActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel illuminanceJLabel;
@@ -253,11 +315,12 @@ final class CommandTopComponent extends TopComponent implements LookupListener {
     }
 
     public void resultChanged(LookupEvent ev) {
-        Iterator it = result.allInstances().iterator();
+        Iterator<? extends NodeDiscover> it = result.allInstances().iterator();
         if (it.hasNext()) {
-            Object o = it.next();
-            selectedAddressJLabel.setText(o.toString());
+            NodeDiscover o = it.next();
+            selectedAddressJLabel.setText(o.getNodeAddress64().toString());
         }
+
     }
 
     final static class ResolvableHelper implements Serializable {
